@@ -1,4 +1,5 @@
-import logo from "@rahoot/web/assets/logo.svg"
+// import logo from "@rahoot/web/assets/logo.svg"
+import logo from "@rahoot/web/assets/SPILHOOT logo.png"
 import Loader from "@rahoot/web/features/game/components/Loader"
 import { useSocket } from "@rahoot/web/features/game/contexts/socketProvider"
 import { Outlet } from "react-router"
