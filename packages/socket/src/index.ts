@@ -1,29 +1,33 @@
-import { Server } from "@rahoot/common/types/game/socket"
+import { Server , Socket } from "@rahoot/common/types/game/socket"
 import { inviteCodeValidator } from "@rahoot/common/validators/auth"
 import Config from "@rahoot/socket/services/config"
 import Game from "@rahoot/socket/services/game"
 import Registry from "@rahoot/socket/services/registry"
 import { withGame } from "@rahoot/socket/utils/game"
+// import { Socket } from "node:dgram"
 import { Server as ServerIO } from "socket.io"
+
 
 const WS_PORT = 3001
 
 const io: Server = new ServerIO({
   path: "/ws",
 })
-Config.init()
+
+// Memastikan database siap sebelum server menerima koneksi
+Config.init().catch(err => console.error("Database failed to initialize:", err))
 
 const registry = Registry.getInstance()
 
 console.log(`Socket server running on port ${WS_PORT}`)
 io.listen(WS_PORT)
 
-io.on("connection", (socket) => {
+io.on("connection", (socket : Socket) => {
   console.log(
     `A user connected: socketId: ${socket.id}, clientId: ${socket.handshake.auth.clientId}`,
   )
 
-  socket.on("player:reconnect", ({ gameId }) => {
+  socket.on("player:reconnect", ({ gameId } : { gameId: string }) => {
     const game = registry.getPlayerGame(gameId, socket.handshake.auth.clientId)
 
     if (game) {
@@ -35,7 +39,7 @@ io.on("connection", (socket) => {
     socket.emit("game:reset", "Game not found")
   })
 
-  socket.on("manager:reconnect", ({ gameId }) => {
+  socket.on("manager:reconnect", ({ gameId } : { gameId: string }) => {
     const game = registry.getManagerGame(gameId, socket.handshake.auth.clientId)
 
     if (game) {
@@ -47,9 +51,10 @@ io.on("connection", (socket) => {
     socket.emit("game:reset", "Game expired")
   })
 
-  socket.on("manager:auth", (password) => {
+  // add async pass and await to make sure config is loaded before sending quizz list
+  socket.on("manager:auth", async(password : string) => {
     try {
-      const config = Config.game()
+      const config = await Config.game()
 
       if (config.managerPassword === "PASSWORD") {
         socket.emit("manager:errorMessage", "Manager password is not configured")
@@ -63,15 +68,15 @@ io.on("connection", (socket) => {
         return
       }
 
-      socket.emit("manager:quizzList", Config.quizz())
+      socket.emit("manager:quizzList", await Config.quizz())
     } catch (error) {
       console.error("Failed to read game config:", error)
       socket.emit("manager:errorMessage", "Failed to read game config")
     }
   })
 
-  socket.on("game:create", (quizzId) => {
-    const quizzList = Config.quizz()
+  socket.on("game:create", async (quizzId : string) => {
+    const quizzList = await Config.quizz()
     const quizz = quizzList.find((q) => q.id === quizzId)
 
     if (!quizz) {
@@ -84,7 +89,7 @@ io.on("connection", (socket) => {
     registry.addGame(game)
   })
 
-  socket.on("player:join", (inviteCode) => {
+  socket.on("player:join", (inviteCode : string) => {
     const result = inviteCodeValidator.safeParse(inviteCode)
 
     if (result.error) {
@@ -104,7 +109,7 @@ io.on("connection", (socket) => {
     socket.emit("game:successRoom", game.gameId)
   })
 
-  socket.on("player:login", ({ gameId, data }) =>
+  socket.on("player:login", ({ gameId, data } ) =>
     withGame(gameId, socket, (game) => game.join(socket, data.username)),
   )
 

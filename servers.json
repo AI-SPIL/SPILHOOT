@@ -1,0 +1,13 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "Spilhoot",
+      "Group": "Servers",
+      "Host": "spilhoot-db",
+      "Port": 5432,
+      "MaintenanceDB": "spilhoot_db", 
+      "Username": "spilhoot",
+      "SSLMode": "prefer"
+    }
+  }
+}

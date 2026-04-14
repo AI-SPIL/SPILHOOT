@@ -1,15 +1,19 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
     "noEmit": true,
     "noErrorTruncation": true,
     "esModuleInterop": true,
     "paths": {
       "@rahoot/common/*": ["./packages/common/src/*"],
       "@rahoot/socket/*": ["./packages/socket/src/*"],
-      "@rahoot/web/*": ["./packages/web/src/*"]
+      "@rahoot/web/*": ["./packages/web/src/*"],
+      "@prisma-client": ["./generated/prisma/client"],
+      "@prisma-client/*": ["./generated/prisma/*"]
     },
     "strict": true,
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "types": ["node"]
   }
 }

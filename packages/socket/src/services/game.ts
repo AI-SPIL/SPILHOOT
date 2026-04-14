@@ -1,4 +1,4 @@
-import { Answer, Player, Quizz } from "@rahoot/common/types/game"
+import { Answer, Player, QuizzWithId } from "@rahoot/common/types/game"
 import { Server, Socket } from "@rahoot/common/types/game/socket"
 import { Status, STATUS, StatusDataMap } from "@rahoot/common/types/game/status"
 import { usernameValidator } from "@rahoot/common/validators/auth"
@@ -6,6 +6,7 @@ import Registry from "@rahoot/socket/services/registry"
 import { createInviteCode, timeToPoint } from "@rahoot/socket/utils/game"
 import sleep from "@rahoot/socket/utils/sleep"
 import { v4 as uuid } from "uuid"
+import { prisma } from "../db/db"
 
 const registry = Registry.getInstance()
 
@@ -30,7 +31,7 @@ class Game {
   leaderboard: Player[]
   tempOldLeaderboard: Player[] | null
 
-  quizz: Quizz
+  quizz: QuizzWithId
   players: Player[]
 
   round: {
@@ -44,7 +45,7 @@ class Game {
     ms: number
   }
 
-  constructor(io: Server, socket: Socket, quizz: Quizz) {
+  constructor(io: Server, socket: Socket, quizz: QuizzWithId) {
     if (!io) {
       throw new Error("Socket server not initialized")
     }
@@ -303,6 +304,7 @@ class Game {
   }
 
   async start(socket: Socket) {
+    // Kalau gamenya sudah mulai, simpan record di game_sessions 
     if (this.manager.id !== socket.id) {
       return
     }
@@ -318,6 +320,19 @@ class Game {
     }
 
     this.started = true
+
+    try {
+      await prisma.game_sessions.create({
+        data: {
+          id: this.gameId,
+          quiz_id: this.quizz.id,
+          host_name: "Admin",
+        },
+      })
+    } catch (err) {
+      console.error("Gagal menyimpan sesi game:", err)
+    }
+
 
     this.broadcastStatus(STATUS.SHOW_START, {
       time: 3,
@@ -516,12 +531,34 @@ class Game {
     this.abortCooldown()
   }
 
-  showLeaderboard() {
+  async showLeaderboard() {
     const isLastRound =
       this.round.currentQuestion + 1 === this.quizz.questions.length
 
     if (isLastRound) {
       this.started = false
+      
+      // Simpan hasil akhir ke database
+      try {
+        // 1. Update waktu selesai sesi
+        await prisma.game_sessions.update({
+          where: { id: this.gameId },
+          data: { ended_at: new Date() },
+        })
+
+        // 2. Simpan semua skor pemain
+        await prisma.player_results.createMany({
+          data: this.leaderboard.map((player) => ({
+            session_id: this.gameId,
+            player_name: player.username,
+            total_score: player.points,
+          })),
+        })
+        console.log(`History game ${this.gameId} berhasil disimpan ke DB.`)
+      } catch (err) {
+        console.error(`Gagal menyimpan history game ke DB:`, err)
+      }
+
 
       this.broadcastStatus(STATUS.FINISHED, {
         subject: this.quizz.subject,

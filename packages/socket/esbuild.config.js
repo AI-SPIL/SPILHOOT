@@ -6,7 +6,11 @@ export const config = {
   bundle: true,
   minify: true,
   platform: "node",
-  outfile: "dist/index.cjs",
+  format: "esm",
+  outfile: "dist/index.mjs",
+  banner: {
+    js: 'import { createRequire } from "node:module"; const require = createRequire(import.meta.url);',
+  },
   sourcemap: true,
   define: {
     "process.env.NODE_ENV": '"production"',
