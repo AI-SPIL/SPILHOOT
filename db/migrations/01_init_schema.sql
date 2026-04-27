@@ -35,20 +35,20 @@ CREATE INDEX IF NOT EXISTS ix_quizzes_is_active ON public.quizzes (is_active);
 CREATE TABLE IF NOT EXISTS public.questions (
     id            UUID          NOT NULL DEFAULT gen_random_uuid(),
     quiz_id       UUID          NOT NULL,
+    question_type VARCHAR       NOT NULL DEFAULT 'multiple_choice', -- multiple_choice atau free_text
     question_text TEXT          NOT NULL,
-    image_url     VARCHAR, -- opsional, untuk pertanyaan dengan gambar
-    video_url     VARCHAR, -- opsional, untuk pertanyaan dengan video
-    audio_url     VARCHAR, -- opsional, untuk pertanyaan dengan audio
+    image_url     BYTEA, -- opsional, untuk pertanyaan dengan gambar
     time_limit    INTEGER       NOT NULL DEFAULT 20, -- dalam detik
     cooldown      INTEGER       NOT NULL DEFAULT 5, -- dalam detik
     points        INTEGER       NOT NULL DEFAULT 1000,
 
     CONSTRAINT questions_pkey PRIMARY KEY (id),
     CONSTRAINT questions_quiz_id_fk FOREIGN KEY (quiz_id)
-        REFERENCES public.quizzes(id) ON DELETE CASCADE
+        REFERENCES public.quizzes(id) ON DELETE RESTRICT
 );
 
 CREATE INDEX IF NOT EXISTS ix_questions_quiz_id ON public.questions (quiz_id);
+CREATE INDEX IF NOT EXISTS ix_questions_question_type ON public.questions (question_type);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 
@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS public.game_sessions (
 
     CONSTRAINT game_sessions_pkey PRIMARY KEY (id),
     CONSTRAINT game_sessions_quiz_id_fk FOREIGN KEY (quiz_id)
-        REFERENCES public.quizzes(id) ON DELETE CASCADE
+        REFERENCES public.quizzes(id) ON DELETE RESTRICT
 );
 
 CREATE INDEX IF NOT EXISTS ix_game_sessions_quiz_id ON public.game_sessions (quiz_id);

@@ -1,10 +1,61 @@
 @import "tailwindcss";
 
+/* ============================================================
+   THEME TOKENS
+   ============================================================ */
 @theme {
-  --color-primary: #ff9900;
+  --color-primary:   #ff9900;
   --color-secondary: #1a140b;
+
+  --surface-base:    rgba(15, 23, 42, 0.55);
+  --surface-raised:  rgba(30, 41, 59, 0.75);
+  --surface-overlay: rgba(15, 23, 42, 0.72);
+
+  --border-subtle:  rgba(148, 163, 184, 0.35);
+  --border-default: rgba(148, 163, 184, 0.50);
+  --border-muted:   rgba(226, 232, 240, 0.35);
+
+  --text-primary:   #f8fafc;
+  --text-secondary: rgba(203, 213, 225, 0.65);
+  --text-label:     rgba(226, 232, 240, 0.90);
+
+  --accent-default: rgba(244, 162, 65, 0.95);
+  --accent-glow:    rgba(244, 162, 65, 0.20);
+  --accent-bg:      rgba(120, 53, 15, 0.32);
+
+  --action-green:       #22c55e;
+  --action-green-hover: #16a34a;
+  --action-slate:       #475569;
+  --action-slate-hover: #334155;
+
+  --edit-bg:       rgba(0, 102, 255, 0.2);
+  --edit-bg-hover: rgba(0, 102, 255, 0.4);
+  --edit-border:   rgba(0, 135, 198, 0.96);
+  --edit-text:     rgba(0, 135, 198, 0.96);
+
+  --delete-bg:           rgba(255, 0, 0, 0.15);
+  --delete-bg-hover:     rgba(255, 0, 0, 0.35);
+  --delete-border:       #c30202;
+  --delete-border-hover: #ff5f7e;
+  --delete-text:         #c30202;
+
+  --danger-bg:     rgba(220, 38, 38, 0.28);
+  --danger-hover:  rgba(220, 38, 38, 0.45);
+  --danger-border: rgba(239, 68, 68, 0.65);
+  --danger-text:   #fecaca;
+
+  --motion-fast: 0.15s;
+  --motion-base: 0.2s;
+
+  --press-shadow-rest: rgba(0, 0, 0, 0.30) 0px -4px inset;
+  --press-shadow-hover: rgba(0, 0, 0, 0.30) 0px -2px inset;
+  --press-shadow-tight: rgba(0, 0, 0, 0.30) 0px -3px inset;
+  --press-shadow-tight-hover: rgba(0, 0, 0, 0.30) 0px -1px inset;
 }
 
+/* ============================================================
+   BASE
+   ============================================================ */
 button:not(:disabled),
 [role="button"]:not(:disabled) {
   cursor: pointer;
@@ -32,180 +83,802 @@ button:not(:disabled),
   box-shadow: none;
 }
 
-.text-outline {
-  -webkit-text-stroke: 2px rgba(0, 0, 0, 0.25);
-}
-
 .shadow-inset {
   box-shadow: rgba(0, 0, 0, 0.25) 0px -4px inset;
 }
 
+
+/* ============================================================
+   UTILITIES
+   ============================================================ */
+.text-outline { -webkit-text-stroke: 2px rgba(0, 0, 0, 0.25); }
+
+/* Shared press effect for dashboard buttons */
+:where(
+  .manager-action-btn,
+  .select-quizz-delete-modal-btn,
+  .free-text-answer-submit,
+  .create-quizz-remove-btn,
+  .create-quizz-action-btn,
+  .game-history-refresh-btn
+) {
+  box-shadow: var(--press-shadow-rest);
+}
+
+:where(
+  .manager-action-btn,
+  .select-quizz-delete-modal-btn,
+  .free-text-answer-submit,
+  .create-quizz-remove-btn,
+  .create-quizz-action-btn,
+  .game-history-refresh-btn
+):active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: none;
+}
+
+/* ============================================================
+   MANAGER DASHBOARD
+   ============================================================ */
+.manager-dashboard { background: transparent; box-shadow: none; }
+
+.manager-dashboard-header,
+.manager-create-header { border-bottom: 1px solid var(--border-muted); }
+
+.manager-action-btn,
+.manager-create-btn,
+.manager-start-btn {
+  transition: background-color var(--motion-base) ease, box-shadow var(--motion-base) ease, transform var(--motion-fast) ease;
+
+  & > span {
+    display: block;
+    transform: translateY(-2px);
+    transition: transform var(--motion-fast) ease;
+  }
+
+  &:hover:not(:disabled) {
+    box-shadow: var(--press-shadow-hover);
+    & > span { transform: translateY(-1px); }
+  }
+
+  &:active:not(:disabled) { & > span { transform: translateY(0); } }
+
+  &:disabled { opacity: 0.45; cursor: not-allowed; }
+}
+
+.manager-create-btn {
+  background: var(--color-primary);
+  &:hover:not(:disabled) { background: var(--accent-default); }
+}
+
+.manager-start-btn {
+  background: var(--action-green);
+  &:hover:not(:disabled) { background: var(--action-green-hover); }
+}
+
+.manager-select-wrap { display: flex; justify-content: stretch; }
+
+/* ============================================================
+   SELECT QUIZ LIST
+   ============================================================ */
+.select-quizz-list { max-height: min(48vh, 420px); overflow-y: auto; padding-right: 0.2rem; }
+
+.select-quizz-item {
+  border: 1px solid var(--border-default);
+  background: var(--surface-base); color: var(--text-primary);
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+  &:hover { border-color: var(--accent-default); background: var(--surface-raised); box-shadow: 0 0 0 1px var(--accent-glow); }
+}
+
+.select-quizz-item-selected {
+  border-color: var(--accent-default);
+  background: linear-gradient(145deg, rgba(244, 162, 65, 0.24), var(--surface-overlay));
+  box-shadow: 0 0 0 1px var(--accent-glow);
+  &:hover { box-shadow: 0 0 0 1px rgba(244, 162, 65, 0.45); }
+}
+
+.select-quizz-card   { position: relative; }
+.select-quizz-content { display: flex; flex-direction: column; gap: 0.35rem; }
+.select-quizz-title   { font-size: 1rem; font-weight: 700; line-height: 1.35; color: var(--text-primary); }
+.select-quizz-meta    { display: flex; flex-direction: column; gap: 0.15rem; font-size: 0.72rem; font-weight: 500; color: var(--text-secondary); }
+.select-quizz-meta-item { display: block; }
+
+/* ============================================================
+   SELECT QUIZ ACTIONS (Edit & Delete)
+   ============================================================ */
+.select-quizz-actions { display: flex; gap: 0.25rem; }
+
+.select-quizz-action-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 1.75rem; height: 1.75rem; border-radius: 0.375rem; border: 1px solid transparent;
+  /* Press effect */
+  box-shadow: var(--press-shadow-tight);
+  transition: background-color var(--motion-fast) ease, border-color var(--motion-fast) ease, transform var(--motion-fast) ease, box-shadow var(--motion-fast) ease;
+
+  &:hover {
+    transform: scale(1.08) translateY(-1px);
+    box-shadow: var(--press-shadow-hover);
+  }
+  &:active:not(:disabled) {
+    transform: scale(1) translateY(2px);
+    box-shadow: none;
+  }
+}
+
+.select-quizz-edit-btn {
+  background: var(--edit-bg); color: var(--edit-text); border-color: var(--edit-border);
+  &:hover { background: var(--edit-bg-hover); color: var(--text-primary); border-color: var(--text-primary); }
+}
+
+.select-quizz-delete-btn {
+  background: var(--delete-bg); color: var(--delete-text); border-color: var(--delete-border);
+  &:hover { background: var(--delete-bg-hover); color: var(--text-primary); border-color: var(--delete-border-hover); }
+}
+
+/* ============================================================
+   DELETE CONFIRMATION MODAL
+   ============================================================ */
+.select-quizz-delete-modal-overlay {
+  position: fixed; inset: 0; z-index: 60;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(2, 6, 23, 0.7); padding: 1rem;
+}
+
+.select-quizz-delete-modal {
+  width: min(30rem, 100%); border: 1px solid var(--border-default); border-radius: 1rem;
+  background: var(--surface-overlay); box-shadow: 0 24px 48px rgba(2, 6, 23, 0.5); padding: 1.25rem;
+}
+
+.select-quizz-delete-modal-title { margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-primary); }
+
+.select-quizz-delete-modal-text {
+  margin-top: 0.6rem; margin-bottom: 1rem;
+  font-size: 0.92rem; line-height: 1.5; color: var(--text-secondary);
+}
+
+.select-quizz-delete-modal-actions { display: flex; justify-content: flex-end; gap: 0.6rem; }
+
+.select-quizz-delete-modal-btn {
+  border-radius: 0.7rem; padding: 0.55rem 0.95rem; font-size: 0.85rem; font-weight: 700; border: 1px solid transparent;
+  transition: background-color var(--motion-base) ease, box-shadow var(--motion-base) ease, transform var(--motion-fast) ease;
+}
+
+.select-quizz-delete-modal-btn-cancel {
+  background: rgba(71, 85, 105, 0.35); border-color: var(--border-default); color: var(--text-primary);
+  &:hover { background: var(--action-slate); box-shadow: var(--press-shadow-hover); }
+}
+
+.select-quizz-delete-modal-btn-confirm {
+  background: var(--danger-bg); border-color: var(--danger-border); color: var(--danger-text);
+  &:hover { background: var(--danger-hover); color: #fee2e2; box-shadow: var(--press-shadow-hover); }
+}
+
+/* ============================================================
+   FREE TEXT ANSWER PANEL
+   ============================================================ */
+.free-text-answer-panel {
+  border: 1px solid var(--border-default); border-radius: 0.75rem;
+  background: var(--surface-base); padding: 1rem; backdrop-filter: blur(2px);
+}
+
+.free-text-answer-title { margin-bottom: 0.5rem; font-size: 1rem; font-weight: 700; color: var(--text-primary); }
+
+.free-text-answer-input {
+  width: 100%; border: 1px solid var(--border-default); border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.95); padding: 0.65rem 0.8rem;
+  font-size: 1rem; font-weight: 600; color: var(--color-secondary); outline: none;
+  &:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--accent-glow); }
+}
+
+.free-text-answer-submit {
+  min-width: 130px; border: none; border-radius: 0.5rem;
+  background: var(--color-primary); padding: 0.7rem 1rem;
+  font-weight: 700; color: var(--text-primary);
+  transition: background-color var(--motion-base) ease, box-shadow var(--motion-base) ease, transform var(--motion-fast) ease;
+  &:hover { background: var(--accent-default); box-shadow: var(--press-shadow-hover); transform: translateY(-1px); }
+}
+
+/* ============================================================
+   CREATE QUIZ — LAYOUT & CARDS
+   ============================================================ */
+.create-quizz { display: flex; flex-direction: column; gap: 1.5rem; width: 100%; color: var(--text-label); }
+
+.create-quizz-card,
+.create-quizz-question-card {
+  border: 1px solid var(--border-subtle); border-radius: 1.25rem;
+  background: var(--surface-base); box-shadow: 0 8px 22px rgba(2, 6, 23, 0.25); padding: 1.5rem;
+}
+
+.create-quizz-card--hero { border-top: 4px solid var(--accent-default); }
+
+/* Shared underline input style */
+.create-quizz-title-input,
+.create-quizz-description-input,
+.create-quizz-question-input,
+.create-quizz-answer-input {
+  width: 100%; border: none; border-bottom: 1px solid var(--border-default);
+  border-radius: 0; background: transparent; color: var(--text-primary); outline: none;
+  transition: border-color 0.2s ease;
+  &::placeholder { color: var(--text-secondary); }
+  &:focus { border-bottom-color: var(--accent-default); }
+}
+
+.create-quizz-title-input       { padding: 0 0 0.8rem; font-size: 2.25rem !important; font-weight: 700; line-height: 1.1; }
+.create-quizz-description-input { padding: 0.8rem 0 0.5rem; margin-top: 1rem; font-size: 0.95rem !important; line-height: 1.4; }
+.create-quizz-question-input    { padding: 0.95rem 1rem; font-size: 1rem !important; }
+.create-quizz-answer-input      { flex: 1; font-size: 0.95rem !important; }
+
+/* ============================================================
+   CREATE QUIZ — QUESTION CARD INTERNALS
+   ============================================================ */
+.create-quizz-list { display: flex; flex-direction: column; gap: 1.25rem; }
+
+.create-quizz-question-head {
+  display: flex; align-items: start; justify-content: space-between;
+  gap: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-subtle);
+}
+
+.create-quizz-eyebrow {
+  display: block; margin-bottom: 0.2rem;
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.create-quizz-question-index { font-size: 1.8rem; font-weight: 800; line-height: 1; color: var(--text-primary); }
+.create-quizz-label           { font-size: 0.875rem; font-weight: 700; color: var(--text-label); }
+
+/* ============================================================
+   CREATE QUIZ — SELECT DROPDOWN
+   ============================================================ */
+.create-quizz-select {
+  appearance: none; display: block; width: 100%; min-width: 0;
+  border: 1px solid var(--border-default); border-radius: 1rem;
+  background: var(--surface-overlay); padding: 0.8rem 2.5rem 0.8rem 1rem;
+  font-size: 0.9rem; font-weight: 600; color: var(--text-primary); cursor: pointer; outline: none;
+  &:focus { border-color: var(--accent-default); box-shadow: 0 0 0 2px var(--accent-glow); }
+  & option { background: var(--surface-overlay); color: var(--text-primary); }
+}
+
+.create-quizz-select-chevron {
+  position: absolute; top: 50%; right: 1rem; width: 1.05rem; height: 1.05rem;
+  color: var(--text-label); pointer-events: none; transform: translateY(-50%); z-index: 10;
+}
+
+/* ============================================================
+   CREATE QUIZ — QUESTION / ANSWER ROWS
+   ============================================================ */
+.create-quizz-question-row,
+.create-quizz-select-wrap,
+.create-quizz-question-input { width: 100%; min-width: 0; }
+
+.create-quizz-select-wrap { position: relative; }
+
+.create-quizz-question-tools {
+  display: flex;
+  flex-direction: row;    
+  align-items: center;   
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.create-quizz-question-row {
+  display: flex; flex-direction: column; align-items: stretch;
+  gap: 0.75rem; margin-top: 1rem; min-height: 3.45rem;
+}
+
+.create-quizz-image-input {
+  position: absolute; width: 1px; height: 1px; margin: -1px;
+  padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0);
+  white-space: nowrap; border: 0;
+}
+
+.create-quizz-image-trigger {
+  display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; gap: 0.55rem;
+  min-height: 3.25rem; padding: 0.8rem 1rem;
+  border: 1px solid var(--border-default); border-radius: 1rem;
+  background: var(--surface-overlay); color: var(--text-primary);
+  max-width: 100%;
+  font-size: 0.9rem; font-weight: 700; cursor: pointer;
+  transition: border-color var(--motion-base) ease, background-color var(--motion-base) ease, box-shadow var(--motion-base) ease;
+  &:hover { border-color: var(--accent-default); background: var(--surface-raised); box-shadow: var(--press-shadow-hover); }
+}
+
+.create-quizz-image-trigger-active {
+  border-color: var(--accent-default); background: var(--accent-bg);
+}
+
+.create-quizz-image-trigger-icon {
+  width: 1.05rem; height: 1.05rem; flex-shrink: 0;
+}
+
+.create-quizz-answers,
+.create-quizz-free-text,
+.create-quizz-settings-row,
+.create-quizz-actions { display: flex; flex-direction: column; gap: 0.85rem; }
+
+.create-quizz-answers,
+.create-quizz-free-text { margin-top: 1rem; min-height: 3.45rem; margin-bottom: 1rem; }
+
+.create-quizz-image-panel {
+  display: flex; flex-direction: column; gap: 0.75rem;
+  margin-top: 1rem; padding: 1rem;
+  border: 1px solid var(--border-subtle); border-radius: 1rem;
+  background: var(--surface-overlay);
+}
+
+.create-quizz-image-panel-header {
+  display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+}
+
+.create-quizz-image-clear {
+  border: none; background: transparent; padding: 0;
+  color: var(--accent-default); font-size: 0.85rem; font-weight: 700;
+  cursor: pointer;
+  &:hover { color: var(--text-primary); }
+}
+
+.create-quizz-image-preview {
+  display: flex; justify-content: center; overflow: hidden;
+  padding: 1rem;
+  border-radius: 0.9rem; background: rgba(15, 23, 42, 0.3);
+}
+
+.create-quizz-image-preview-media {
+  display: block; max-height: 12rem; width: auto; max-width: 100%;
+  object-fit: contain;
+}
+
+.create-quizz-answer-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.85rem; }
+
+.create-quizz-answer-item {
+  display: flex; align-items: center; gap: 0.75rem;
+  border: 1px solid var(--border-subtle); border-radius: 1rem; padding: 0.9rem;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.create-quizz-answer-item-idle {
+  background: var(--surface-base);
+  &:hover { border-color: var(--border-default); background: var(--surface-raised); }
+}
+
+.create-quizz-answer-item-active { border-color: var(--accent-default); background: var(--accent-bg); }
+
+.create-quizz-answer-letter {
+  display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center;
+  width: 2.5rem; height: 2.5rem; border: 2px solid var(--border-default); border-radius: 9999px;
+  font-size: 1rem; font-weight: 800; color: var(--text-secondary);
+}
+
+.create-quizz-answer-letter-active { border-color: var(--accent-default); background: var(--accent-default); color: var(--color-secondary); }
+
+/* ============================================================
+   CREATE QUIZ — SETTINGS ROW
+   ============================================================ */
+.create-quizz-settings-row {
+  flex-direction: row; align-items: start; justify-content: space-between;
+  padding-top: 1rem; border-top: 1px solid var(--border-subtle);
+}
+
+.create-quizz-setting-group  { display: flex; flex-direction: column; gap: 0.35rem; }
+.create-quizz-setting-label  { font-size: 0.8rem; font-weight: 600; color: var(--text-label); }
+.create-quizz-setting-inline { display: inline-flex; align-items: center; gap: 0.35rem; }
+
+.create-quizz-setting-input {
+  width: 3.5rem; border: none; border-bottom: 1px solid var(--border-default);
+  background: transparent; padding: 0.15rem 0 0.2rem; text-align: center;
+  font-size: 0.95rem; font-weight: 600; color: var(--text-primary); outline: none;
+  &:focus { border-bottom-color: var(--accent-default); }
+}
+
+.create-quizz-setting-unit { font-size: 0.75rem; color: var(--text-secondary); }
+
+/* ============================================================
+   CREATE QUIZ — ACTIONS
+   ============================================================ */
+.create-quizz-remove-btn {
+  display: inline-flex; align-items: center; align-self: flex-end; gap: 0.5rem;
+  border: 1px solid var(--delete-border); border-radius: 0.85rem;
+  background: var(--delete-bg); padding: 0.8rem 1rem;
+  font-size: 0.85rem; font-weight: 700; color: var(--delete-text);
+  transition: background-color var(--motion-base) ease, box-shadow var(--motion-base) ease, transform var(--motion-fast) ease, border-color var(--motion-fast) ease;
+  &:hover { background: var(--delete-bg-hover); color: var(--text-primary); border-color: var(--delete-border-hover); box-shadow: var(--press-shadow-hover); }
+}
+
+.create-quizz-actions { flex-direction: row; padding-top: 1rem; border-top: 1px solid var(--border-subtle); }
+
+.create-quizz-action-btn {
+  display: inline-flex; flex: 1; align-items: center; justify-content: center;
+  gap: 0.55rem; min-height: 3rem; padding: 0.9rem 1.1rem !important;
+  border-radius: 0.9rem !important; font-weight: 700 !important;
+  transition: background-color var(--motion-base) ease, box-shadow var(--motion-base) ease, transform var(--motion-fast) ease !important;
+
+  & span {
+    display: inline-flex !important; align-items: center; justify-content: center;
+    gap: 0.55rem; line-height: 1;
+    transform: translateY(-2px);
+    transition: transform var(--motion-fast) ease;
+  }
+
+  &:hover {
+    box-shadow: var(--press-shadow-hover);
+    & span { transform: translateY(-1px); }
+  }
+
+  &:active:not(:disabled) { & span { transform: translateY(0); } }
+}
+
+.create-quizz-action-icon { flex-shrink: 0; width: 1.05rem; height: 1.05rem; }
+
+.create-quizz-action-btn-secondary {
+  background: var(--action-slate) !important; color: var(--text-primary) !important;
+  &:hover:not(:disabled) { background: var(--action-slate-hover) !important; box-shadow: var(--press-shadow-hover); }
+}
+
+.create-quizz-action-btn-primary {
+  background: var(--color-primary) !important; color: var(--text-primary) !important;
+  &:hover:not(:disabled) { background: var(--accent-default) !important; box-shadow: var(--press-shadow-hover); }
+}
+
+/* ============================================================
+   GAME PIN SHAPE
+   ============================================================ */
 @media (min-width: 768px) {
-  .game-pin-out {
-    clip-path: polygon(0 0, 90% 0, 100% 50%, 90% 100%, 0 100%);
-    padding-right: 10px !important;
+  .game-pin-out { clip-path: polygon(0 0, 90% 0, 100% 50%, 90% 100%, 0 100%); padding-right: 10px !important; }
+  .game-pin-in  { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 9.8% 50%); padding-left: 50px !important; margin-left: -35px; }
+}
+
+/* ============================================================
+   RESPONSIVE — TABLET & UP
+   ============================================================ */
+@media (min-width: 640px) {
+  .create-quizz-question-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
   }
-  .game-pin-in {
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 9.8% 50%);
-    padding-left: 50px !important;
-    margin-left: -35px;
+
+  .create-quizz-question-tools {
+    flex-direction: row;        
+    align-items: center;        
+    justify-content: flex-end;
+    max-width: min(100%, 24rem);
+  }
+  .create-quizz-question-row .create-quizz-select-wrap {
+    position: relative !important;
+    display: flex;
+    width: auto;
+    flex: 0 1 auto;        /* GANTI dari flex: 1 1 11rem */
+    flex-direction: row;
+    align-items: center;
+    min-width: 9rem;
+    max-width: 15rem;
+  }
+
+  .create-quizz-answer-grid  { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .create-quizz-settings-row { flex-direction: row; align-items: end; gap: 1rem; }
+  .create-quizz-remove-btn   { margin-left: auto; }
+}
+
+/* ============================================================
+   RESPONSIVE — MOBILE
+   ============================================================ */
+@media (max-width: 640px) {
+  .create-quizz { max-height: none; gap: 1.15rem; }
+
+  .create-quizz-card,
+  .create-quizz-question-card { padding: 1rem; }
+
+  .create-quizz-title-input       { font-size: 1.55rem !important; padding-bottom: 0.55rem; }
+  .create-quizz-description-input { font-size: 0.88rem !important; padding-top: 0.75rem; }
+  .create-quizz-answer-item       { padding: 0.75rem; }
+  .create-quizz-answer-letter     { width: 2.2rem; height: 2.2rem; }
+  .create-quizz-question-tools    { flex-direction: row; align-items: stretch}
+  .create-quizz-image-trigger     { flex: 0 1 auto; padding-inline: 0.85rem; }
+  .create-quizz-settings-row      { gap: 0.9rem; }
+  .create-quizz-setting-input     { width: 3rem; font-size: 0.85rem; }
+  .create-quizz-image-panel-header { align-items: start; flex-direction: column; }
+  .create-quizz-remove-btn        { width: 100%; justify-content: center; }
+}
+
+/* ============================================================
+   MANAGER TOOLBAR
+   ============================================================ */
+.manager-toolbar {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;
+  @media (max-width: 480px) { flex-direction: column; align-items: stretch; }
+}
+
+.manager-toolbar-right {
+  display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+  @media (max-width: 480px) { justify-content: flex-end; }
+}
+
+.manager-pill-tab {
+  display: flex; align-items: center; gap: 6px; padding: 0.45rem 1.1rem;
+  border-radius: 7px; font-size: 0.875rem; font-weight: 600;
+  border: none;
+  /* Press effect */
+  box-shadow: var(--press-shadow-tight);
+  transition: background var(--motion-fast), color var(--motion-fast), box-shadow var(--motion-fast) ease, transform var(--motion-fast) ease;
+  color: var(--color-secondary);
+  background: var(--text-primary);
+
+  &:hover {
+    color: var(--text-primary);
+    background: var(--border-subtle);
+    box-shadow: var(--press-shadow-tight-hover);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: none;
   }
 }
 
+.manager-pill-tab--active {
+  background: var(--color-primary); color: var(--text-primary);
+  &:hover { background: var(--accent-default); }
+}
+
+/* ============================================================
+   GAME HISTORY (ACCORDION STYLE)
+   ============================================================ */
+.game-history {
+  width: 100%; 
+  border-radius: 1rem;
+  border: 1px solid var(--border-muted); 
+  background: var(--surface-base); 
+  overflow: hidden;
+}
+
+/* Header */
+.game-history-header {
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between;
+  gap: 0.8rem; 
+  flex-wrap: wrap;
+  padding: 1.5rem; 
+  border-bottom: 1px solid var(--border-muted);
+}
+
+.game-history-title { 
+  font-size: 1.125rem; 
+  font-weight: 700; 
+  letter-spacing: -0.02em; 
+  color: var(--text-primary); 
+}
+
+.game-history-controls {
+  display: flex; 
+  align-items: center; 
+  gap: 0.75rem; 
+  flex-wrap: wrap;
+}
+
+.game-history-search-input {
+  min-width: 14rem; 
+  border: 1px solid var(--border-default); 
+  border-radius: 0.5rem;
+  background: var(--surface-overlay); 
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem; 
+  color: var(--text-primary); 
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &::placeholder { color: var(--text-secondary); }
+  &:focus {
+    border-color: var(--accent-default);
+    box-shadow: 0 0 0 2px var(--accent-glow);
+  }
+}
+
+.game-history-refresh-btn {
+  border: none; 
+  border-radius: 0.5rem; 
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem; 
+  font-weight: 700;
+  background: var(--color-primary); 
+  color: var(--text-primary);
+  transition: background var(--motion-base) ease, box-shadow var(--motion-base) ease, transform var(--motion-fast) ease;
+
+  &:hover { 
+    background: var(--accent-default); 
+    box-shadow: var(--press-shadow-hover); 
+  }
+}
+
+/* Accordion Wrapper & Items */
+.game-history-accordion-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.game-history-accordion-item {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.game-history-accordion-item:last-child {
+  border-bottom: none;
+}
+
+/* Accordion Trigger (The clickable row) */
+.game-history-accordion-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 1rem 1.5rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s ease;
+}
+
+.game-history-accordion-trigger:hover {
+  background: var(--surface-overlay);
+}
+
+
+.game-history-accordion-trigger[aria-expanded="true"] {
+  background: var(--surface-overlay);
+}
+
+/* Subject & Meta */
+.game-history-subject { 
+  display: flex; 
+  align-items: center; 
+  gap: 0.75rem; 
+}
+
+.game-history-subject-title { 
+  font-size: 0.875rem;
+  font-weight: 700; 
+  color: var(--text-primary); 
+}
+
+.game-history-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+/* Accordion Content (Expanded Area) */
+.game-history-accordion-content {
+  padding: 1rem 1.5rem 1.5rem 1.5rem;
+  background: var(--surface-base);
+  border-top: 1px dashed var(--border-muted); /* Visual separation from the trigger */
+}
+
+.game-history-accordion-content h4 {
+  margin: 0 0 1rem 0;
+  font-size: 0.75rem; 
+  font-weight: 700;
+  letter-spacing: 0.1em; 
+  text-transform: uppercase;
+  color: var(--text-secondary); 
+}
+
+/* Top Players List inside Accordion */
+.game-history-top-players-list { 
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex; 
+  flex-direction: column; 
+  gap: 0.5rem; 
+}
+
+.game-history-top-player-row {
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  background: var(--border-subtle); /* Gives each row a card-like feel */
+  border-radius: 0.5rem;
+}
+
+.game-history-top-player-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.game-history-top-player-medal {
+  display: inline-flex; 
+  align-items: center; 
+  justify-content: center;
+  width: 1.5rem; 
+  height: 1.5rem; 
+  border-radius: 999px;
+  background: var(--surface-raised);
+  font-size: 0.8rem;
+}
+
+.game-history-top-player-name { 
+  font-size: 0.875rem; 
+  font-weight: 600;
+  color: var(--text-primary); 
+}
+
+.game-history-top-player-points { 
+  font-size: 0.875rem; 
+  font-weight: 700;
+  color: var(--text-primary); 
+}
+
+/* Empty State */
+.game-history-empty { 
+  padding: 3rem; 
+  text-align: center; 
+  font-size: 0.875rem; 
+  font-style: italic; 
+  color: var(--text-secondary); 
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
 .spotlight {
-  position: absolute;
-  height: 200%;
-  width: 200%;
-  z-index: 100;
-  background-image: radial-gradient(
-    circle,
-    transparent 180px,
-    rgba(0, 0, 0, 0.6) 200px
-  );
-  opacity: 0;
-  left: -50%;
-  top: -50%;
-  transition: all 0.5s;
-  animation: spotlightAnim 2.5s ease-in;
+  position: absolute; z-index: 100; width: 200%; height: 200%; left: -50%; top: -50%;
+  background-image: radial-gradient(circle, transparent 180px, rgba(0, 0, 0, 0.6) 200px);
+  opacity: 0; transition: all 0.5s; animation: spotlightAnim 2.5s ease-in;
 }
 
-@keyframes spotlightAnim {
-  0% {
-    left: -20%;
-    top: -20%;
-  }
-  30% {
-    opacity: 100;
-    top: -80%;
-    left: -80%;
-  }
-  60% {
-    top: -50%;
-    left: -20%;
-  }
-  80% {
-    top: -50%;
-    left: -50%;
-  }
-  98% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
-.anim-show {
-  animation: show 0.5s ease-out;
-}
-
-.anim-timer {
-  animation: timer 1s ease-out infinite;
-}
+.anim-show     { animation: show 0.5s ease-out; }
+.anim-timer    { animation: timer 1s ease-out infinite; }
+.anim-balanced { animation: balanced 0.8s linear infinite; }
 
 .anim-quizz {
   animation: quizz 0.8s linear;
-  transform: perspective(1200px) rotateY(-15deg) rotateX(15deg)
-    translateZ(100px);
-  box-shadow: 10px 10px 0 rgba(20, 24, 29, 1);
+  transform: perspective(1200px) rotateY(-15deg) rotateX(15deg) translateZ(100px);
+  box-shadow: 10px 10px 0 var(--color-secondary);
+  & .button { box-shadow: rgba(0, 0, 0, 0.25) -4px -4px inset; animation: quizzButton 0.8s ease-out; }
 }
 
-.anim-quizz .button {
-  box-shadow: rgba(0, 0, 0, 0.25) -4px -4px inset;
-  animation: quizzButton 0.8s ease-out;
-}
-
-.anim-balanced {
-  animation: balanced 0.8s linear infinite;
-}
-
-@keyframes balanced {
-  0% {
-    transform: rotate(0deg);
-  }
-  25% {
-    transform: rotate(-10deg) translateY(-10px);
-  }
-  50% {
-    transform: rotate(0deg) translateY(0px);
-  }
-  75% {
-    transform: rotate(10deg) translateY(-10px);
-  }
-  100% {
-    transform: rotate(0deg);
-  }
+@keyframes spotlightAnim {
+  0%   { left: -20%; top: -20%; }
+  30%  { opacity: 1; top: -80%; left: -80%; }
+  60%  { top: -50%; left: -20%; }
+  80%  { top: -50%; left: -50%; }
+  98%  { opacity: 1; }
+  100% { opacity: 0; }
 }
 
 @keyframes show {
-  0% {
-    transform: scale(0);
-  }
-  30% {
-    transform: scale(0.9);
-  }
-  60% {
-    transform: scale(0.8);
-  }
-  80% {
-    transform: scale(1);
-  }
-}
-
-@keyframes progressBar {
-  from {
-    width: 0%;
-  }
-  to {
-    width: 100%;
-  }
+  0%  { transform: scale(0); }   30% { transform: scale(0.9); }
+  60% { transform: scale(0.8); } 80% { transform: scale(1); }
 }
 
 @keyframes timer {
-  0% {
-    transform: scale(1);
-  }
-  30% {
-    transform: scale(1.4) rotate(-6deg);
-  }
-  60% {
-    transform: scale(0.8) rotate(6deg);
-  }
-  80% {
-    transform: scale(1);
-  }
+  0%  { transform: scale(1); }                30% { transform: scale(1.4) rotate(-6deg); }
+  60% { transform: scale(0.8) rotate(6deg); } 80% { transform: scale(1); }
 }
 
+@keyframes balanced {
+  0%   { transform: rotate(0deg); }
+  25%  { transform: rotate(-10deg) translateY(-10px); }
+  50%  { transform: rotate(0deg) translateY(0px); }
+  75%  { transform: rotate(10deg) translateY(-10px); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes progressBar { from { width: 0%; } to { width: 100%; } }
+
 @keyframes quizz {
-  0% {
-    transform: scale(0) perspective(1200px) rotateY(-60deg) rotateX(60deg)
-      translateZ(100px);
-  }
-  60% {
-    transform: scale(1) perspective(1200px) rotateY(-15deg) rotateX(15deg)
-      translateZ(100px);
-  }
-  80% {
-    transform: scale(0.8) perspective(1200px) rotateY(-15deg) rotateX(15deg)
-      translateZ(100px);
-  }
-  100% {
-    transform: scale(1) perspective(1200px) rotateY(-15deg) rotateX(15deg)
-      translateZ(100px);
-  }
+  0%   { transform: scale(0)   perspective(1200px) rotateY(-60deg) rotateX(60deg) translateZ(100px); }
+  60%  { transform: scale(1)   perspective(1200px) rotateY(-15deg) rotateX(15deg) translateZ(100px); }
+  80%  { transform: scale(0.8) perspective(1200px) rotateY(-15deg) rotateX(15deg) translateZ(100px); }
+  100% { transform: scale(1)   perspective(1200px) rotateY(-15deg) rotateX(15deg) translateZ(100px); }
 }
 
 @keyframes quizzButton {
-  0% {
-    transform: scale(0);
-  }
-  60% {
-    transform: scale(1);
-  }
-  80% {
-    transform: scale(0.8);
-  }
-  100% {
-    transform: scale(1);
-  }
+  0%  { transform: scale(0); }   60%  { transform: scale(1); }
+  80% { transform: scale(0.8); } 100% { transform: scale(1); }
 }

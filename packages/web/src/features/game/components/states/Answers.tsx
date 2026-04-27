@@ -1,5 +1,6 @@
 import type { CommonStatusDataMap } from "@rahoot/common/types/game/status"
 import AnswerButton from "@rahoot/web/features/game/components/AnswerButton"
+import Input from "@rahoot/web/features/game/components/Input"
 import {
   useEvent,
   useSocket,
@@ -21,7 +22,14 @@ type Props = {
 }
 
 const Answers = ({
-  data: { question, answers, image, audio, video, time, totalPlayer },
+  data: {
+    question,
+    questionType,
+    answers,
+    image,
+    time,
+    totalPlayer,
+  },
 }: Props) => {
   const { gameId }: { gameId?: string } = useParams()
   const { socket } = useSocket()
@@ -29,6 +37,7 @@ const Answers = ({
 
   const [cooldown, setCooldown] = useState(time)
   const [totalAnswer, setTotalAnswer] = useState(0)
+  const [textAnswer, setTextAnswer] = useState("")
 
   const [sfxPop] = useSound(SFX_ANSWERS_SOUND, {
     volume: 0.1,
@@ -53,19 +62,39 @@ const Answers = ({
     })
     sfxPop()
   }
-
   useEffect(() => {
-    if (video || audio) {
-      return
-    }
-
     playMusic()
 
-    // eslint-disable-next-line consistent-return
+     
     return () => {
       stopMusic()
     }
   }, [playMusic])
+
+  const handleSubmitTextAnswer = () => {
+    if (!player) {
+      return
+    }
+
+    const trimmed = textAnswer.trim()
+
+    if (!trimmed) {
+      return
+    }
+
+    socket?.emit("player:selectedAnswer", {
+      gameId,
+      data: {
+        answerKey: trimmed,
+      },
+    })
+    sfxPop()
+  }
+
+
+  useEffect(() => {
+    setTextAnswer("")
+  }, [question])
 
   useEvent("game:cooldown", (sec) => {
     setCooldown(sec)
@@ -82,24 +111,6 @@ const Answers = ({
         <h2 className="text-center text-2xl font-bold text-white drop-shadow-lg md:text-4xl lg:text-5xl">
           {question}
         </h2>
-
-        {Boolean(audio) && !player && (
-          <audio
-            className="m-4 mb-2 w-auto rounded-md"
-            src={audio}
-            autoPlay
-            controls
-          />
-        )}
-
-        {Boolean(video) && !player && (
-          <video
-            className="m-4 mb-2 aspect-video max-h-60 w-auto rounded-md px-4 sm:max-h-100"
-            src={video}
-            autoPlay
-            controls
-          />
-        )}
 
         {Boolean(image) && (
           <img
@@ -124,18 +135,46 @@ const Answers = ({
           </div>
         </div>
 
-        <div className="mx-auto mb-4 grid w-full max-w-7xl grid-cols-2 gap-1 rounded-full px-2 text-lg font-bold text-white md:text-xl">
-          {answers.map((answer, key) => (
-            <AnswerButton
-              key={key}
-              className={clsx(ANSWERS_COLORS[key])}
-              icon={ANSWERS_ICONS[key]}
-              onClick={handleAnswer(key)}
-            >
-              {answer}
-            </AnswerButton>
-          ))}
-        </div>
+        {questionType === "free_text" ? (
+          <div className="mx-auto mb-4 w-full max-w-3xl px-2">
+            <div className="free-text-answer-panel">
+              <p className="free-text-answer-title">Type Your Answer</p>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Input
+                  value={textAnswer}
+                  onChange={(event) => setTextAnswer(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      handleSubmitTextAnswer()
+                    }
+                  }}
+                  className="free-text-answer-input"
+                  placeholder="Write your answer here"
+                />
+                <button
+                  type="button"
+                  className="free-text-answer-submit"
+                  onClick={handleSubmitTextAnswer}
+                >
+                  Submit
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="mx-auto mb-4 grid w-full max-w-7xl grid-cols-2 gap-1 rounded-full px-2 text-lg font-bold text-white md:text-xl">
+            {answers.map((answer, key) => (
+              <AnswerButton
+                key={key}
+                className={clsx(ANSWERS_COLORS[key])}
+                icon={ANSWERS_ICONS[key]}
+                onClick={handleAnswer(key)}
+              >
+                {answer}
+              </AnswerButton>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )

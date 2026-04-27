@@ -8,6 +8,7 @@ export const config = {
   platform: "node",
   format: "esm",
   outfile: "dist/index.mjs",
+  external: ["sharp", "@prisma/client", "pg", "socket.io"],
   banner: {
     js: 'import { createRequire } from "node:module"; const require = createRequire(import.meta.url);',
   },

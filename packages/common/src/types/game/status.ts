@@ -21,10 +21,9 @@ export type CommonStatusDataMap = {
   SHOW_QUESTION: { question: string; image?: string; cooldown: number }
   SELECT_ANSWER: {
     question: string
+    questionType?: "multiple_choice" | "free_text"
     answers: string[]
     image?: string
-    video?: string
-    audio?: string
     time: number
     totalPlayer: number
   }
@@ -48,7 +47,6 @@ type ManagerExtraStatus = {
     correct: number
     answers: string[]
     image?: string
-    video?: string
   }
   SHOW_LEADERBOARD: { oldLeaderboard: Player[]; leaderboard: Player[] }
 }

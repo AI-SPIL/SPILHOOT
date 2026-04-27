@@ -389,10 +389,9 @@ class Game {
 
     this.broadcastStatus(STATUS.SELECT_ANSWER, {
       question: question.question,
+      questionType: question.question_type || "multiple_choice",
       answers: question.answers,
       image: question.image,
-      video: question.video,
-      audio: question.audio,
       time: question.time,
       totalPlayer: this.players.length,
     })
@@ -469,7 +468,7 @@ class Game {
 
     this.round.playersAnswers = []
   }
-  selectAnswer(socket: Socket, answerId: number) {
+  selectAnswer(socket: Socket, answerKey: number | string) {
     const player = this.players.find((player) => player.id === socket.id)
     const question = this.quizz.questions[this.round.currentQuestion]
 
@@ -479,6 +478,21 @@ class Game {
 
     if (this.round.playersAnswers.find((p) => p.playerId === socket.id)) {
       return
+    }
+
+    let answerId = -1
+
+    if (question.question_type === "free_text") {
+      const expected = (question.answers[question.solution] || "")
+        .trim()
+        .toLowerCase()
+      const submitted = typeof answerKey === "string"
+        ? answerKey.trim().toLowerCase()
+        : ""
+
+      answerId = submitted && submitted === expected ? question.solution : -1
+    } else if (typeof answerKey === "number" && Number.isInteger(answerKey)) {
+      answerId = answerKey
     }
 
     this.round.playersAnswers.push({

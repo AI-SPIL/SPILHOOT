@@ -1,7 +1,8 @@
 import type {
-  GameUpdateQuestion,
-  Player,
-  QuizzWithId,
+    GameHistoryItem,
+    GameUpdateQuestion,
+    Player,
+    QuizzWithId,
 } from "@rahoot/common/types/game"
 import type { Status, StatusDataMap } from "@rahoot/common/types/game/status"
 import { Server as ServerIO, Socket as SocketIO } from "socket.io"
@@ -22,6 +23,20 @@ export type MessageWithoutStatus<T = any> = {
 
 export type MessageGameId = {
   gameId?: string
+}
+
+export type CreateQuizzPayload = {
+  subject: string
+  description?: string
+  questions: {
+    question_type: "multiple_choice" | "free_text"
+    question: string
+    answers: string[]
+    solution: number
+    cooldown: number
+    time: number
+    image?: string
+  }[]
 }
 
 export interface ServerToClientEvents {
@@ -56,6 +71,10 @@ export interface ServerToClientEvents {
     currentQuestion: GameUpdateQuestion
   }) => void
   "manager:quizzList": (_quizzList: QuizzWithId[]) => void
+  "manager:historyList": (_historyList: GameHistoryItem[]) => void
+  "manager:quizzCreated": (_data: { id: string; subject: string }) => void
+  "manager:quizzUpdated": (_data: { id: string; subject: string }) => void
+  "manager:quizzDeleted": (_data: { success: boolean; message: string }) => void
   "manager:gameCreated": (_data: { gameId: string; inviteCode: string }) => void
   "manager:statusUpdate": (_data: {
     status: Status
@@ -70,6 +89,9 @@ export interface ServerToClientEvents {
 export interface ClientToServerEvents {
   // Manager actions
   "game:create": (_quizzId: string) => void
+  "manager:createQuizz": (_payload: CreateQuizzPayload) => void
+  "manager:updateQuizz": (_message: { quizzId: string; payload: CreateQuizzPayload }) => void
+  "manager:deleteQuizz": (_message: { quizzId: string }) => void
   "manager:auth": (_password: string) => void
   "manager:reconnect": (_message: { gameId: string }) => void
   "manager:kickPlayer": (_message: { gameId: string; playerId: string }) => void
@@ -77,13 +99,14 @@ export interface ClientToServerEvents {
   "manager:abortQuiz": (_message: MessageGameId) => void
   "manager:nextQuestion": (_message: MessageGameId) => void
   "manager:showLeaderboard": (_message: MessageGameId) => void
+  "manager:history": () => void
 
   // Player actions
   "player:join": (_inviteCode: string) => void
   "player:login": (_message: MessageWithoutStatus<{ username: string }>) => void
   "player:reconnect": (_message: { gameId: string }) => void
   "player:selectedAnswer": (
-    _message: MessageWithoutStatus<{ answerKey: number }>,
+    _message: MessageWithoutStatus<{ answerKey: number | string }>,
   ) => void
 
   // Common
