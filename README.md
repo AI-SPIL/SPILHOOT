@@ -139,8 +139,6 @@ Quiz Options:
   - `question`: The question text
   - `answers`: Array of possible answers (2-4 options)
   - `image`: Optional URL for an image displayed with the question
-  - `video`: Optional URL for a video displayed with the question
-  - `audio`: Optional URL for an audio played during the question
   - `solution`: Index of correct answer (0-based)
   - `cooldown`: Time in seconds before showing the question
   - `time`: Time in seconds allowed to answer

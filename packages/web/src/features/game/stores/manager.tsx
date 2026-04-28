@@ -10,23 +10,36 @@ type ManagerStore<T> = {
   gameId: string | null
   status: Status<T> | null
   players: Player[]
+  isAuthenticated: boolean
 
   setGameId: (_gameId: string | null) => void
   setStatus: <K extends keyof T>(_name: K, _data: T[K]) => void
   resetStatus: () => void
   setPlayers: (_players: Player[]) => void
+  setIsAuthenticated: (_isAuthenticated: boolean) => void
 
   reset: () => void
+  resetGame: () => void
 }
 
-const initialState = {
-  gameId: null,
-  status: null,
-  players: [],
+const MANAGER_AUTH_KEY = "manager_auth"
+
+const getInitialState = () => {
+  const isAuthenticated =
+    typeof window !== "undefined"
+      ? sessionStorage.getItem(MANAGER_AUTH_KEY) === "true"
+      : false
+
+  return {
+    gameId: null,
+    status: null,
+    players: [],
+    isAuthenticated,
+  }
 }
 
 export const useManagerStore = create<ManagerStore<StatusDataMap>>((set) => ({
-  ...initialState,
+  ...getInitialState(),
 
   setGameId: (gameId) => set({ gameId }),
 
@@ -34,6 +47,18 @@ export const useManagerStore = create<ManagerStore<StatusDataMap>>((set) => ({
   resetStatus: () => set({ status: null }),
 
   setPlayers: (players) => set({ players }),
+  setIsAuthenticated: (isAuthenticated) => {
+    sessionStorage.setItem(MANAGER_AUTH_KEY, String(isAuthenticated))
+    if (!isAuthenticated) {
+      sessionStorage.removeItem("manager_password")
+    }
+    set({ isAuthenticated })
+  },
 
-  reset: () => set(initialState),
+  reset: () => {
+    sessionStorage.setItem(MANAGER_AUTH_KEY, "false")
+    sessionStorage.removeItem("manager_password")
+    set({ gameId: null, status: null, players: [], isAuthenticated: false })
+  },
+  resetGame: () => set({ gameId: null, status: null, players: [] }),
 }))

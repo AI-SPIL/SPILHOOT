@@ -17,7 +17,7 @@ const ManagerGamePage = () => {
   const navigate = useNavigate()
   const { gameId: gameIdParam }: { gameId?: string } = useParams()
   const { socket } = useSocket()
-  const { gameId, status, setGameId, setStatus, setPlayers, reset } =
+  const { gameId, status, setGameId, setStatus, setPlayers, resetGame } =
     useManagerStore()
   const { setQuestionStates } = useQuestionStore()
 
@@ -44,8 +44,8 @@ const ManagerGamePage = () => {
   )
 
   useEvent("game:reset", (message) => {
-    navigate("/manager")
-    reset()
+    navigate("/manager") // arahin ke halaman select quizz
+    resetGame()
     setQuestionStates(null)
     toast.error(message)
   })

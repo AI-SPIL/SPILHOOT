@@ -11,12 +11,12 @@ import {
 } from "@rahoot/web/features/game/contexts/socketProvider"
 import { useManagerStore } from "@rahoot/web/features/game/stores/manager"
 import clsx from "clsx"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import { useNavigate } from "react-router"
 
 const ManagerAuthPage = () => {
-  const { setGameId, setStatus } = useManagerStore()
+  const { setGameId, setStatus, isAuthenticated, setIsAuthenticated } = useManagerStore()
   const navigate = useNavigate()
   const { socket } = useSocket()
 
@@ -27,15 +27,29 @@ const ManagerAuthPage = () => {
   const [viewMode, setViewMode] = useState<"list" | "grid">("list")
   const [selectedQuizzId, setSelectedQuizzId] = useState<string | null>(null)
   const [editingQuizz, setEditingQuizz] = useState<QuizzWithId | null>(null)
-  const [managerPassword, setManagerPassword] = useState("")
+  const [managerPassword, setManagerPassword] = useState(() => {
+    return typeof window !== "undefined"
+      ? sessionStorage.getItem("manager_password") || ""
+      : ""
+  })
+
+  // Set isAuth to true if already authenticated from previous session
+  useEffect(() => {
+    if (isAuthenticated && managerPassword && socket && !isAuth) {
+      // Auto-login with stored password
+      socket.emit("manager:auth", managerPassword)
+    }
+  }, [isAuthenticated, managerPassword, socket, isAuth])
 
   useEvent("manager:quizzList", (quizzList) => {
     setIsAuth(true)
+    setIsAuthenticated(true)
     setQuizzList(quizzList)
   })
 
   useEvent("manager:historyList", (historyList) => {
     setIsAuth(true)
+    setIsAuthenticated(true)
     setHistoryList(historyList)
   })
 
@@ -67,6 +81,7 @@ const ManagerAuthPage = () => {
 
   const handleAuth = (password: string) => {
     setManagerPassword(password)
+    sessionStorage.setItem("manager_password", password)
     socket?.emit("manager:auth", password)
   }
 
@@ -116,7 +131,7 @@ return
     handleCreateQuizz(payload)
   }
 
-  if (!isAuth) {
+  if (!isAuth && !isAuthenticated) {
     return <ManagerPassword onSubmit={handleAuth} />
   }
 

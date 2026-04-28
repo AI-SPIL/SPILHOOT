@@ -285,7 +285,7 @@ const CreateQuizz = ({ onSubmit, initialData, managerPassword }: Props) => {
           value={subject}
           onChange={(event: ChangeEvent<HTMLInputElement>) => setSubject(event.target.value)}
           placeholder="Quiz Subject"
-          className="create-quizz-title-input !text-4xl"
+          className="create-quizz-title-input"
         />
         <input
           type="text"
